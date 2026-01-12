@@ -3,6 +3,7 @@ import tempfile
 from pathlib import Path
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
+import requests
 from flask_cors import CORS
 from pydub import AudioSegment
 from openai import OpenAI
@@ -38,6 +39,21 @@ def transcribe_with_openai(filepath: Path) -> str:
             model="whisper-1", #TODO make configurable
         )
     return resp.text
+
+def analyze_with_crewai(text: str) -> dict:
+    """Send `text` to the crewai_service /analyze endpoint and return its JSON response.
+
+    Expects a running service at CREWAI_ANALYZE_URL (env) or http://localhost:6001/analyze.
+    """
+    url = os.getenv("CREWAI_ANALYZE_URL", "http://localhost:6001/analyze")
+    try:
+        resp = requests.post(url, json={"text": text}, timeout=15)
+        try:
+            return resp.json()
+        except Exception:
+            return {"error": "invalid JSON from analysis service", "status_code": resp.status_code, "text": resp.text}
+    except Exception as e:
+        return {"error": "request failed", "details": str(e)}
 
 
 @app.route("/transcribe", methods=["POST"])
@@ -75,7 +91,10 @@ def transcribe():
             else:
                 text = "OPENAI_API_KEY not set. Set the key to enable cloud transcription."
 
-            return jsonify({"text": text})
+            # Attempt to send transcribed text to CrewAI analysis service
+            analysis = analyze_with_crewai(text)
+
+            return jsonify({"text": text, "analysis": analysis})
         finally:
             if tmp_wav and tmp_wav.exists():
                 try:
