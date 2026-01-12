@@ -1,0 +1,7 @@
+flask
+openai
+python-dotenv
+ffmpeg-python
+pydub
+gunicorn
+requests

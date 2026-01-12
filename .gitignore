@@ -1,0 +1,36 @@
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Environment vars / secrets
+.env
+.env.*
+
+# Audio artifacts (do not commit large media files)
+audio/
+*.wav
+*.mp3
+*.m4a
+
+# Distribution / build
+build/
+dist/
+*.egg-info/
+
+# IDE/editor files
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Logs and temp
+*.log
+tmp*
+*.tmp
