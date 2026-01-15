@@ -1,0 +1,6 @@
+crewai
+flask
+python-dotenv
+
+# If CrewAI uses OpenAI under the hood, you may also need:
+# openai

@@ -1,9 +1,0 @@
-flask
-openai
-python-dotenv
-pydub
-gunicorn
-requests
-flask-cors
-
-# Note: `pydub` requires the `ffmpeg` binary on the system (install via brew/apt).

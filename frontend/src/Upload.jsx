@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { GATEWAY_URL } from "./App";
 
 export default function Upload() {
   const [file, setFile] = useState(null);
@@ -14,7 +15,7 @@ export default function Upload() {
     try {
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch("http://localhost:5007/transcribe", {
+      const res = await fetch(`${GATEWAY_URL}/transcribe`, {
         method: "POST",
         body: fd,
       });
