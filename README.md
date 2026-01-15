@@ -1,47 +1,51 @@
-# PROJECT_TAAI — Minimal run instructions
+# PROJECT_TAAI
 
-Prerequisites:
-- Python 3.8+ and `pip`
-- Node.js and `npm`
-- `ffmpeg` installed on the system (pydub requires the binary): `brew install ffmpeg` (macOS)
+TA audio feedback system using microservices (transcription + analysis).
 
-Backend (API):
+## Setup
 
-1. Install and run:
+1. **Clone & install:**
 ```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-# set OPENAI_API_KEY in backend/.env
-PORT=5001 python3 app.py
+python -m venv venv
+source venv/bin/activate
+pip install -r gateway/requirements.txt -r services/transcription/requirements.txt -r services/analysis/requirements.txt
 ```
 
-Frontend (React, Vite):
+2. **Configure `.env.local` at root:**
+```dotenv
+TRANSCRIPTION_SERVICE_PORT=5011
+ANALYSIS_SERVICE_PORT=5012
+GATEWAY_PORT=8888
+OPENAI_API_KEY=sk-...
+```
 
-1. Install and run:
+3. **Run services (3 terminals):**
+```bash
+# Terminal 1: Gateway
+python gateway/app.py
+
+# Terminal 2: Transcription
+python services/transcription/app.py
+
+# Terminal 3: Analysis
+python services/analysis/app.py
+```
+
+4. **Run frontend (new terminal):**
 ```bash
 cd frontend
 npm install
-# dev (preferred — loads VITE_GATEWAY_URL from repo .env.local):
-../scripts/start-frontend.sh
-```
-# open the dev URL printed by Vite (usually http://localhost:5173)
+npm run dev
 ```
 
-CrewAI analysis service:
+Visit `http://localhost:3000` (or port shown by Vite).
 
-1. Install and run:
-```bash
-cd crewai_service
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-# set CREWAI_API_KEY and/or OPENAI_API_KEY in crewai_service/.env
-PORT=5002 python3 app.py
-```
+## Architecture
 
-Notes:
-- The backend expects the analysis service at `http://localhost:6001/analyze` by default. Set `CREWAI_ANALYZE_URL` to change it.
-- Ensure `ffmpeg` is installed for audio conversion.
-- `.env.example` files are present in the services — copy to `.env` and fill values.
+- **Gateway** (8888): Routes frontend requests to services
+- **Transcription** (5011): Converts audio to text (OpenAI Whisper)
+- **Analysis** (5012): Analyzes grammar & style (CrewAI)
+
+## Requirements
+
+- Python 3.8+, Node.js, ffmpeg (`brew install ffmpeg`)
