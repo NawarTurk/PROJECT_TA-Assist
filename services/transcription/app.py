@@ -90,5 +90,5 @@ def transcribe():
 
 
 if __name__ == '__main__':
-    PORT = int(os.getenv('TRANSCRIPTION_SERVICE_PORT', 5001))
+    PORT = int(os.getenv('TRANSCRIPTION_SERVICE_PORT'))
     app.run(host='0.0.0.0', port=PORT, debug=True)

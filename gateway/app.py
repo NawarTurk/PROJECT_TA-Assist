@@ -16,8 +16,8 @@ else:
 app = Flask(__name__)
 CORS(app)
 
-TRANSCRIPTION_URL = os.getenv('TRANSCRIPTION_SERVICE_URL', 'http://localhost:5001/transcribe')
-ANALYSIS_URL = os.getenv('ANALYSIS_SERVICE_URL', 'http://localhost:5002/analyze')
+TRANSCRIPTION_URL = os.getenv('TRANSCRIPTION_SERVICE_URL')
+ANALYSIS_URL = os.getenv('ANALYSIS_SERVICE_URL')
 
 
 @app.route('/transcribe', methods=['POST'])
@@ -47,7 +47,7 @@ def transcribe_gateway():
     # call analysis service
     try:
         print('Sending text to analysis service...')
-        a = requests.post(ANALYSIS_URL, json={'text': text}, timeout=20)
+        a = requests.post(ANALYSIS_URL, json={'text': text}, timeout=80)
         analysis = a.json() if a.status_code == 200 else {'error': 'analysis service error', 'status_code': a.status_code, 'text': a.text}
     except Exception as e:
         analysis = {'error': 'analysis request failed', 'details': str(e)}
