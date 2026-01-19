@@ -5,7 +5,10 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 load_dotenv()
 import json
+import pandas as pd
 
+INPUT_PRICE_PER_M = 0.40
+OUTPUT_PRICE_PER_M = 1.60
 
 # ==================== Output Models ====================
 
@@ -26,6 +29,34 @@ class CompleteFeedback(BaseModel):
     vocabulary: str
     clarity: str
     tone: str
+
+# ==================== Cost Calculation ====================
+def calculate_cost(usage_metrics, model="gpt-4.1-mini"):
+    """
+    Calculate OpenAI API cost from CrewAI usage metrics.
+    Prices are per 1M tokens.
+    """
+    PRICING = {
+        "gpt-4.1-mini": {
+            "input": 0.40,
+            "output": 1.60,
+        }
+    }
+
+    if model not in PRICING:
+        raise ValueError(f"Unknown pricing for model: {model}")
+
+    prompt_tokens = usage_metrics.prompt_tokens
+    completion_tokens = usage_metrics.completion_tokens
+
+    input_cost = PRICING[model]["input"] * prompt_tokens / 1_000_000
+    output_cost = PRICING[model]["output"] * completion_tokens / 1_000_000
+
+    print(f"Cost breakdown for model {model}:")
+    print(f"  Prompt tokens: {prompt_tokens} -> ${input_cost:.4f}")
+    print(f"  Completion tokens: {completion_tokens} -> ${output_cost:.4f}")
+    print(f"  Total cost: ${input_cost + output_cost:.4f}")
+
 
 # ==================== Analysis Function ====================
 
@@ -132,11 +163,11 @@ def analyze_text(text: str) -> dict:
     gather_task = Task(
         description="Combine all feedback from the 4 evaluators (grammar, vocabulary, clarity, tone) into one complete, comprehensive analysis. Ensure all 4 aspects are included in the final output.",
         expected_output="Complete structured feedback covering all 4 aspects (grammar, vocabulary, clarity, tone)",
-        output_json=CompleteFeedback,
         agent=gather_agent,
         context=[grammar_task, vocabulary_task, clarity_task, tone_task],
         async_execution=False,
-        output_file="analysis_report.json"
+        output_file="analysis_report.json",
+        output_pydantic=CompleteFeedback
     )
 
     # Create and run the crew
@@ -147,8 +178,16 @@ def analyze_text(text: str) -> dict:
 
     print("Starting async text analysis...")
     result = crew.kickoff()
+    final = result.pydantic.dict()
 
-    print("Analysis complete!")
-    return json.loads(gather_task.output.raw)
+    print(f"{20*'_'}\n")
+    print("Analysis complete!\n")
+    print(final)
+    print(f"{20*'_'}\n")
+
+    calculate_cost(crew.usage_metrics, model=grammar_agent.llm.model)
+
+    # return json.loads(gather_task.output.raw)
+    return final
 
 

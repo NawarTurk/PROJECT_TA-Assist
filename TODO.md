@@ -7,6 +7,9 @@
 - [ ] React components per analysis type
 - [ ] Audio file validation
 
+## Chores
+- [ ] Add error handling for analysis service
+
 ## Architecture
 - [ ] Config system: transcriber choice (OpenAI vs HuggingFace)
 - [ ] Teaching style service
